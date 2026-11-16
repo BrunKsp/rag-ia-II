@@ -1,0 +1,6 @@
+# Local configuration and secrets
+.env
+
+# Source datasets (kept locally; too large for standard GitHub repositories)
+arquivos/*.csv
+arquivos/*.pdf
