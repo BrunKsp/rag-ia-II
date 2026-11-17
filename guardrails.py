@@ -9,13 +9,17 @@ import re
 
 # Palavras-chave do domínio agroclimático
 _DOMAIN_KEYWORDS = {
-    "safra", "cultura", "plantio", "colheita", "risco", "clima",
-    "solo", "irrigado", "sequeiro", "municipio", "município", "estado",
-    "uf", "brasil", "agro", "agricultur", "produtividade", "cevada",
-    "soja", "milho", "arroz", "feijão", "trigo", "algodão", "café",
-    "decada", "décade", "portaria", "zoneamento", "agroclimático",
-    "sinistro", "manejo", "ciclo", "proagro", "lavoura", "semear",
-    "fazenda", "campo", "cultura", "grão", "grãos",
+    # Termos exclusivamente agrícolas
+    "safra", "plantio", "colheita", "irrigado", "sequeiro",
+    "agroclimático", "zoneamento", "proagro", "lavoura", "semear",
+    "sinistro", "portaria",
+    # Culturas agrícolas
+    "cevada", "soja", "milho", "arroz", "feijão", "trigo", "algodão",
+    "café", "sorgo", "girassol", "canola", "amendoim", "mandioca",
+    "uva", "maçã", "tomate",
+    # Termos técnicos específicos do corpus
+    "decada", "décade", "tábua", "tabua", "risco",
+    "ciclo", "manejo", "solo", "cultura",
 }
 
 # Padrões de injeção de prompt

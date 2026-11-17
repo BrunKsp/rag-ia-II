@@ -1,6 +1,30 @@
-# Local configuration and secrets
+# Dados sensíveis
 .env
 
-# Source datasets (kept locally; too large for standard GitHub repositories)
+# Banco vetorial (gerado pelo ingest.py — não versionar)
+chroma_db/
+
+# Dados de entrada (grandes demais para o GitHub)
 arquivos/*.csv
 arquivos/*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.venv/
+venv/
+env/
+*.egg-info/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

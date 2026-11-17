@@ -26,18 +26,19 @@ from tqdm import tqdm
 
 load_dotenv()
 
-NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
-EMBEDDING_MODEL = "nvidia/nv-embedqa-mistral-7b-v2"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+EMBEDDING_MODEL = "text-embedding-3-small"
 COLLECTION_NAME = "tabua_risco_safra"
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(_BASE_DIR, "arquivos", "dados-abertos-tabua-de-risco-safra-2026-2027.csv")
 CHROMA_PATH = os.path.join(_BASE_DIR, "chroma_db")
-BATCH_SIZE = 10   # modelo 7B aceita lotes menores
+BATCH_SIZE = 100  # OpenAI suporta lotes grandes, acelera bastante a ingestão
 CHUNK_SIZE = 600
 CHUNK_OVERLAP = 80
-# Limita municípios por documento para manter o corpus gerenciável.
-# Com 1.1M linhas, amostrar 300 por (cultura, UF) ainda representa bem a diversidade regional.
-MAX_ROWS_PER_DOC = int(os.getenv("MAX_ROWS_PER_DOC", "300"))
+# Limita municípios por documento para manter o corpus gerenciável na ingestão.
+# Com 1.1M linhas, amostrar 50 por (cultura, UF) representa a diversidade regional
+# com ~4000 chunks totais, viável para free tier NVIDIA (~20 min de ingestão).
+MAX_ROWS_PER_DOC = int(os.getenv("MAX_ROWS_PER_DOC", "50"))
 
 
 def _row_to_text(row: pd.Series) -> str:
@@ -87,12 +88,18 @@ def _chunk_text(text: str) -> list[str]:
 
 
 def _get_embeddings(client: OpenAI, texts: list[str]) -> list[list[float]]:
-    response = client.embeddings.create(
-        model=EMBEDDING_MODEL,
-        input=texts,
-        extra_body={"input_type": "passage", "truncate": "END"},
-    )
-    return [item.embedding for item in response.data]
+    import time
+    for attempt in range(5):
+        try:
+            response = client.embeddings.create(model=EMBEDDING_MODEL, input=texts)
+            return [item.embedding for item in response.data]
+        except Exception as e:
+            if "429" in str(e):
+                wait = 2 ** attempt + 2
+                time.sleep(wait)
+                continue
+            raise
+    raise RuntimeError("Embedding falhou após 5 tentativas")
 
 
 def ingest():
@@ -146,10 +153,7 @@ def ingest():
     print(f"     {len(all_chunks)} chunks gerados")
 
     print(f"\n[4/5] Gerando embeddings com {EMBEDDING_MODEL}...")
-    client = OpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
-        api_key=NVIDIA_API_KEY,
-    )
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
     all_embeddings: list[list[float]] = []
     for start in tqdm(range(0, len(all_chunks), BATCH_SIZE)):
@@ -202,7 +206,7 @@ def ingest():
     except Exception as e:
         print(f"     MongoDB ignorado: {e}")
 
-    print(f"\n✓ Ingestão concluída!")
+    print(f"\nIngestao concluida!")
     print(f"  {len(all_chunks)} chunks | {len(groups)} documentos | {n_culturas} culturas | {n_estados} estados")
 
 

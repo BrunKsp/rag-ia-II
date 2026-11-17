@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
-EMBEDDING_MODEL = "nvidia/nv-embedqa-mistral-7b-v2"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+EMBEDDING_MODEL = "text-embedding-3-small"
 COLLECTION_NAME = "tabua_risco_safra"
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_PATH = os.path.join(_BASE_DIR, "chroma_db")
@@ -23,10 +23,7 @@ _chroma_collection = None
 def _get_client() -> OpenAI:
     global _openai_client
     if _openai_client is None:
-        _openai_client = OpenAI(
-            base_url="https://integrate.api.nvidia.com/v1",
-            api_key=NVIDIA_API_KEY,
-        )
+        _openai_client = OpenAI(api_key=OPENAI_API_KEY)
     return _openai_client
 
 
@@ -42,7 +39,6 @@ def _query_embedding(text: str) -> list[float]:
     response = _get_client().embeddings.create(
         model=EMBEDDING_MODEL,
         input=[text],
-        extra_body={"input_type": "query", "truncate": "END"},
     )
     return response.data[0].embedding
 

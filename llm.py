@@ -18,8 +18,8 @@ from guardrails import validate_output, GuardrailError
 
 load_dotenv()
 
-NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
-LLM_MODEL = os.getenv("LLM_MODEL", "meta/llama-3.3-70b-instruct")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 MAX_TOOL_ROUNDS = 3
 
 SYSTEM_PROMPT = """Você é um assistente especialista em zoneamento agroclimático e tábua de risco de safra do Brasil para a safra 2026-2027.
@@ -103,10 +103,7 @@ async def run_inference(query: str, mcp_caller, history: list[dict] | None = Non
     Returns:
         dict com 'answer', 'sources', 'tool_calls'.
     """
-    client = AsyncOpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
-        api_key=NVIDIA_API_KEY,
-    )
+    client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     if history:
