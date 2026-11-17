@@ -2,10 +2,15 @@
 RF05: Interface Streamlit de chat com exibição de fontes documentais.
 """
 
+import json
 import streamlit as st
 import httpx
 
 BACKEND_URL = "http://localhost:8000"
+
+
+def json_pretty(d: dict) -> str:
+    return json.dumps(d, ensure_ascii=False)
 
 st.set_page_config(
     page_title="Tábua de Risco Safra 2026-2027",
@@ -76,11 +81,6 @@ for msg in st.session_state["messages"]:
             with st.expander("🔧 Ferramentas utilizadas"):
                 for tc in msg["tool_calls"]:
                     st.code(f"{tc['tool']}({json_pretty(tc.get('args', {}))})", language="python")
-
-
-def json_pretty(d: dict) -> str:
-    import json
-    return json.dumps(d, ensure_ascii=False)
 
 
 # --- Input ---
